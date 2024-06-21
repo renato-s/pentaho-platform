@@ -25,6 +25,7 @@ import org.pentaho.platform.api.engine.IPentahoSession;
 import org.pentaho.platform.engine.core.messages.Messages;
 
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class BaseSession extends PentahoBase implements IPentahoSession {
 
@@ -47,6 +48,8 @@ public abstract class BaseSession extends PentahoBase implements IPentahoSession
   private boolean authenticated;
 
   private volatile boolean backgroundExecutionAlert;
+
+  private AtomicInteger counter = new AtomicInteger();
 
   public BaseSession( final String name, final String id, final Locale locale ) {
     this.name = name;
@@ -155,4 +158,16 @@ public abstract class BaseSession extends PentahoBase implements IPentahoSession
     this.backgroundExecutionAlert = false;
   }
 
+  @Override
+  public void incrementUsage() {
+    counter.incrementAndGet();
+  }
+   @Override
+   public void decrementUsage() {
+    counter.decrementAndGet();
+   }
+
+  protected int getUsageCounter() {
+    return counter.get();
+  }
 }

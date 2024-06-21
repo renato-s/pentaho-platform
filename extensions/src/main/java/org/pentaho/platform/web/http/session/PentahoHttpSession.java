@@ -32,8 +32,10 @@ import org.pentaho.platform.engine.core.system.BaseSession;
 import org.pentaho.platform.engine.core.system.PentahoSystem;
 
 import javax.servlet.http.HttpSession;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
 
 public class PentahoHttpSession extends BaseSession {
 
@@ -44,6 +46,8 @@ public class PentahoHttpSession extends BaseSession {
   private long authenticationTime = 0L;
 
   private static final Log logger = LogFactory.getLog( PentahoHttpSession.class );
+
+  private Map<String, Object> attributeCache = new HashMap<>();
 
   @Override
   public Log getLogger() {
@@ -67,11 +71,26 @@ public class PentahoHttpSession extends BaseSession {
   }
 
   public Object getAttribute( final String attributeName ) {
-    return session.getAttribute( attributeName );
+    try {
+      return session.getAttribute( attributeName );
+    } catch ( IllegalStateException e ) {
+      // Fallback for PDI-20068 - in long-running jobs, even after the session has expired
+      // we need to be able to get session attributes or the job will fail
+      if ( attributeCache.containsKey( attributeName ) ) {
+        return attributeCache.get( attributeName );
+      } else {
+        // The intended value was not cached so lets throw the original error
+        throw e;
+      }
+    }
   }
 
   public void setAttribute( final String attributeName, final Object value ) {
     session.setAttribute( attributeName, value );
+    //PDI-20068
+    if ( value != null ) {
+      attributeCache.put( attributeName, value );
+    }
   }
 
   public Object removeAttribute( final String attributeName ) {

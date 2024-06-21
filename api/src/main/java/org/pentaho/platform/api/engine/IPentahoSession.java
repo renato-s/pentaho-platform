@@ -212,4 +212,8 @@ public interface IPentahoSession extends ILogger, IAuditable {
    */
   public void resetBackgroundExecutionAlert();
 
+  public void incrementUsage();
+
+  public void decrementUsage();
+
 }

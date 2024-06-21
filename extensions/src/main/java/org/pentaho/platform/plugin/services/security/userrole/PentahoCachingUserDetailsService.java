@@ -20,8 +20,10 @@
 
 package org.pentaho.platform.plugin.services.security.userrole;
 
+import org.pentaho.platform.api.engine.IPentahoSession;
 import org.pentaho.platform.api.mt.ITenant;
 import org.pentaho.platform.api.mt.ITenantedPrincipleNameResolver;
+import org.pentaho.platform.engine.core.system.PentahoSessionHolder;
 import org.pentaho.platform.repository2.unified.jcr.JcrTenantUtils;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserCache;
@@ -86,6 +88,15 @@ public class PentahoCachingUserDetailsService implements UserDetailsService {
       }
 
       userCache.putUserInCache( user );
+    } else {
+      //User is cached, but we still need to add tenant info to session
+      // Store the Tenant ID in the session
+      IPentahoSession session = PentahoSessionHolder.getSession();
+      String tenantId = (String) session.getAttribute( IPentahoSession.TENANT_ID_KEY );
+      if ( tenantId == null ) {
+        ITenant tenant = JcrTenantUtils.getTenant( username, true );
+        session.setAttribute( IPentahoSession.TENANT_ID_KEY, tenant.getId() );
+      }
     }
 
     if ( user instanceof NotFoundUserDetails ) {

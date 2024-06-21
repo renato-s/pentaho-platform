@@ -103,6 +103,10 @@ public class StandaloneSession extends BaseSession {
   public void destroy() {
     // Clear out references to this session in attributes.
     // See BISERVER-2639 for details
+    if ( getUsageCounter() > 0) {
+      return;
+    }
+
     if ( attributes != null ) {
       for ( Object o : attributes.values() ) {
         if ( o instanceof ISessionContainer ) {

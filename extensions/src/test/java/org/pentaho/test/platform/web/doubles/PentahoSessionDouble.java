@@ -151,4 +151,11 @@ public class PentahoSessionDouble extends LoggerDouble implements IPentahoSessio
     return processId;
   }
 
+  @Override
+  public void incrementUsage() {
+  }
+
+  @Override
+  public void decrementUsage() {
+  }
 }

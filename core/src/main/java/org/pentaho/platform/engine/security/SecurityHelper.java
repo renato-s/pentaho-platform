@@ -134,6 +134,7 @@ public class SecurityHelper implements ISecurityHelper {
     }
 
     PentahoSessionHolder.setSession( session );
+    session.incrementUsage();
 
     Authentication auth = createAuthentication( principalName );
     // TODO We need to figure out how to inject this
@@ -177,6 +178,7 @@ public class SecurityHelper implements ISecurityHelper {
       return callable.call();
     } finally {
       IPentahoSession sessionToDestroy = PentahoSessionHolder.getSession();
+      sessionToDestroy.decrementUsage();
       if ( sessionToDestroy != null && sessionToDestroy != origSession ) {
         try {
           sessionToDestroy.destroy();
